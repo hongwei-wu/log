@@ -30,15 +30,12 @@ func (f *RawFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		return nil, err
 	}
 
-	f.appendKeyValue(b, "time", entry.Time.Format("2006-01-02 15:04:05"))
-	level := entry.Level.String()
-	if level == "warning" {
-		level = "warn"
-	}
-	f.appendKeyValue(b, "level", fmt.Sprintf("%-5s", level))
+	f.appendValue(b, fmt.Sprintf("[%s][%s]", entry.Time.Format("2006-01-02 15:04:05"), f.levelAbbr(entry.Level.String())))
 
-	if _, ok := entry.Data[field.File]; ok {
-		f.appendKeyValue(b, field.File, entry.Data[field.File])
+	if value, ok := entry.Data[field.File]; ok {
+		file := fmt.Sprint(value)
+		width := f.updateMaxFileWidth(file)
+		f.appendValue(b, fmt.Sprintf("[%-"+fmt.Sprintf("%d", width)+"s]", file))
 	}
 
 	fields := make([]Field, 0, len(entry.Data))
@@ -71,13 +68,7 @@ func (f *RawFormatter) appendKeyValue(b *bytes.Buffer, key string, value interfa
 	}
 	b.WriteString(key)
 	b.WriteByte('=')
-	if key == field.File {
-		file := fmt.Sprint(value)
-		width := f.updateMaxFileWidth(file)
-		f.appendValue(b, fmt.Sprintf("%-"+fmt.Sprintf("%d", width)+"s", file))
-	} else {
-		f.appendValue(b, value)
-	}
+	f.appendValue(b, value)
 }
 
 func (f *RawFormatter) appendValue(b *bytes.Buffer, value interface{}) {
@@ -98,4 +89,23 @@ func (f *RawFormatter) updateMaxFileWidth(file string) int32 {
 		atomic.StoreInt32(&f.maxFileWidth, width)
 	}
 	return width
+}
+
+func (f *RawFormatter) levelAbbr(level string) string {
+	switch level {
+	case "debug":
+		return "D"
+	case "info":
+		return "I"
+	case "warn":
+		fallthrough
+	case "warning":
+		return "W"
+	case "error":
+		return "E"
+	case "fatal":
+		return "F"
+	default:
+		return "U"
+	}
 }
