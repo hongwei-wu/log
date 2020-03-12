@@ -11,36 +11,57 @@ var (
 )
 
 func TestLogger(t *testing.T) {
-	RootLogger().AddAppender(appender.NewColorConsoleAppender())
-	t.Run("log", func(t *testing.T) {
-		SetLevel("debug")
-		writeLog(t)
-		SetLevel("info")
-		writeLog(t)
-		SetLevel("warn")
-		writeLog(t)
-		SetLevel("error")
-		writeLog(t)
-		SetLevel("fatal")
-		writeLog(t)
+
+	t.Run("default appender", func(t *testing.T) {
+		writeLogAllLevel(t)
+		writeEntryLogAllLevel(t)
 	})
 
-	t.Run("entry", func(t *testing.T) {
-		SetLevel("debug")
-		writeEntryLog(t)
-		SetLevel("info")
-		writeEntryLog(t)
-		SetLevel("warn")
-		writeEntryLog(t)
-		SetLevel("error")
-		writeEntryLog(t)
-		SetLevel("fatal")
-		writeEntryLog(t)
+	t.Run("color console appender", func(t *testing.T) {
+		RootLogger().ResetAppender()
+		RootLogger().AddAppender(appender.NewColorConsoleAppender())
+		writeLogAllLevel(t)
+		writeEntryLogAllLevel(t)
+	})
+
+	t.Run("role file appender", func(t *testing.T) {
+		RootLogger().ResetAppender()
+		RootLogger().AddAppender(appender.NewRollFileAppender("./log_dir/test.log", 10*K, 10))
+		for i := 0; i < 1024; i++ {
+			writeLogAllLevel(t)
+			writeEntryLogAllLevel(t)
+		}
 	})
 
 	t.Run("fatal", func(t *testing.T) {
 		Fatal("Fatal")
 	})
+}
+
+func writeLogAllLevel(t *testing.T) {
+	SetLevel("debug")
+	writeLog(t)
+	SetLevel("info")
+	writeLog(t)
+	SetLevel("warn")
+	writeLog(t)
+	SetLevel("error")
+	writeLog(t)
+	SetLevel("fatal")
+	writeLog(t)
+}
+
+func writeEntryLogAllLevel(t *testing.T) {
+	SetLevel("debug")
+	writeEntryLog(t)
+	SetLevel("info")
+	writeEntryLog(t)
+	SetLevel("warn")
+	writeEntryLog(t)
+	SetLevel("error")
+	writeEntryLog(t)
+	SetLevel("fatal")
+	writeEntryLog(t)
 }
 
 func writeEntryLog(t *testing.T) {

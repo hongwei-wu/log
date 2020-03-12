@@ -102,16 +102,16 @@ func (e *Entry) Infoln(args ...interface{}) {
 	e.println(logrus.InfoLevel, args...)
 }
 
-func (entry *Entry) Warnln(args ...interface{}) {
-	entry.println(logrus.WarnLevel, args...)
+func (e *Entry) Warnln(args ...interface{}) {
+	e.println(logrus.WarnLevel, args...)
 }
 
 func (e *Entry) Warningln(args ...interface{}) {
 	e.println(logrus.WarnLevel, args...)
 }
 
-func (entry *Entry) Errorln(args ...interface{}) {
-	entry.println(logrus.ErrorLevel, args...)
+func (e *Entry) Errorln(args ...interface{}) {
+	e.println(logrus.ErrorLevel, args...)
 }
 
 func (e *Entry) Fatalln(args ...interface{}) {

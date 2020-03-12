@@ -18,9 +18,10 @@ const (
 	White
 )
 
-const Clear = 0
-
-const escape = "\x1b"
+const (
+	Clear  = 0
+	escape = "\x1b"
+)
 
 type ColorConsoleAppender struct {
 	*os.File
@@ -34,7 +35,7 @@ func NewColorConsoleAppender() *ColorConsoleAppender {
 }
 
 func (a *ColorConsoleAppender) Name() string {
-	return "ColorConsole"
+	return "ColorConsoleAppender"
 }
 
 func (a *ColorConsoleAppender) Write(p []byte) (n int, err error) {
@@ -58,7 +59,7 @@ func levelColor(level logrus.Level) int32 {
 	case logrus.ErrorLevel:
 		return Red
 	case logrus.FatalLevel:
-		return White
+		return Red
 	}
 	return Clear
 }

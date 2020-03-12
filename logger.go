@@ -32,21 +32,25 @@ func NewLoggerImpl() *LoggerImpl {
 	return l
 }
 
-func (l *LoggerImpl) Write(p []byte) (n int, err error) {
-	for _, a := range l.appenders {
+func (impl *LoggerImpl) Write(p []byte) (n int, err error) {
+	for _, a := range impl.appenders {
 		a.Write(p)
 	}
 	return len(p), nil
 }
 
-func (l *LoggerImpl) SetLevel(level string) {
-	l.Logger.SetLevel(ParseLevel(level))
+func (impl *LoggerImpl) SetLevel(level string) {
+	impl.Logger.SetLevel(ParseLevel(level))
 }
 
-func (l *LoggerImpl) SetFormatter(formatter formatter.Formatter) {
-	l.Logger.Formatter = formatter
+func (impl *LoggerImpl) SetFormatter(formatter formatter.Formatter) {
+	impl.Logger.Formatter = formatter
 }
 
-func (l *LoggerImpl) AddAppender(appender appender.Appender) {
-	l.appenders[appender.Name()] = appender
+func (impl *LoggerImpl) AddAppender(appender appender.Appender) {
+	impl.appenders[appender.Name()] = appender
+}
+
+func (impl *LoggerImpl) ResetAppender() {
+	impl.appenders = make(map[string]appender.Appender)
 }

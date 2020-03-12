@@ -18,7 +18,7 @@ func NewConsoleAppender() *ConsoleAppender {
 }
 
 func (a *ConsoleAppender) Name() string {
-	return "Console"
+	return "ConsoleAppender"
 }
 
 func (a *ConsoleAppender) Write(p []byte) (n int, err error) {
