@@ -1,18 +1,19 @@
 package log
 
 import (
+	"fmt"
 	"github.com/hongwei-wu/log/appender"
+	"os"
 	"testing"
 )
 
 var (
-	format = "%d %s %v"
-	args   = []interface{}{1, "str_1", struct{}{}}
+	testLogDir = "./tmp/log.dir"
 )
 
 func TestLogger(t *testing.T) {
 
-	t.Run("default appender", func(t *testing.T) {
+	t.Run("default console appender", func(t *testing.T) {
 		writeLogAllLevel(t)
 		writeEntryLogAllLevel(t)
 	})
@@ -26,7 +27,7 @@ func TestLogger(t *testing.T) {
 
 	t.Run("role file appender", func(t *testing.T) {
 		RootLogger().ResetAppender()
-		RootLogger().AddAppender(appender.NewRollFileAppender("./log_dir/test.log", 10*K, 10))
+		RootLogger().AddAppender(appender.NewRollFileAppender(fmt.Sprintf("%s/test.log", testLogDir), 10*K, 10))
 		for i := 0; i < 1024; i++ {
 			writeLogAllLevel(t)
 			writeEntryLogAllLevel(t)
@@ -34,6 +35,8 @@ func TestLogger(t *testing.T) {
 	})
 
 	t.Run("fatal", func(t *testing.T) {
+		RootLogger().ResetAppender()
+		os.RemoveAll(testLogDir)
 		Fatal("Fatal")
 	})
 }
