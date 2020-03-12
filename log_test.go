@@ -1,14 +1,18 @@
 package log
 
-import "testing"
+import (
+	"github.com/hongwei-wu/log/appender"
+	"testing"
+)
 
 var (
 	format = "%d %s %v"
 	args   = []interface{}{1, "str_1", struct{}{}}
 )
 
-func TestDefaultLogger(t *testing.T) {
-	t.Run("", func(t *testing.T) {
+func TestLogger(t *testing.T) {
+	RootLogger().AddAppender(appender.NewColorConsoleAppender())
+	t.Run("log", func(t *testing.T) {
 		SetLevel("debug")
 		writeLog(t)
 		SetLevel("info")
@@ -17,41 +21,71 @@ func TestDefaultLogger(t *testing.T) {
 		writeLog(t)
 		SetLevel("error")
 		writeLog(t)
+		SetLevel("fatal")
+		writeLog(t)
+	})
+
+	t.Run("entry", func(t *testing.T) {
+		SetLevel("debug")
+		writeEntryLog(t)
+		SetLevel("info")
+		writeEntryLog(t)
+		SetLevel("warn")
+		writeEntryLog(t)
+		SetLevel("error")
+		writeEntryLog(t)
+		SetLevel("fatal")
+		writeEntryLog(t)
+	})
+
+	t.Run("fatal", func(t *testing.T) {
+		Fatal("Fatal")
 	})
 }
 
-func TestFatal(t *testing.T) {
-	Fatal(args...)
-}
+func writeEntryLog(t *testing.T) {
+	t.Helper()
+	WithField("field", "Debug").Debug("Debug")
+	WithField("field", "Debugln").Debugln("Debugln")
+	WithField("field", "Debugf").Debugf("%s", "Debugf")
 
-func TestFatalln(t *testing.T) {
-	Fatalln(args...)
-}
+	WithField("field", "Info").Info("Info")
+	WithField("field", "Infoln").Infoln("Infoln")
+	WithField("field", "Infof").Infof("%s", "Infof")
 
-func TestFatalf(t *testing.T) {
-	Fatalf(format, args...)
+	WithField("field", "Warn").Warn("Warn")
+	WithField("field", "Warnln").Warnln("Warnln")
+	WithField("field", "Warnf").Warnf("%s", "Warnf")
+
+	WithField("field", "Warning").Warning("Warning")
+	WithField("field", "Warningln").Warningln("Warningln")
+	WithField("field", "Warningf").Warningf("%s", "Warningf")
+
+	WithField("field", "Error").Error("Error")
+	WithField("field", "Errorln").Errorln("Errorln")
+	WithField("field", "Errorf").Errorf("%s", "Errorf")
 }
 
 func writeLog(t *testing.T) {
 	t.Helper()
 
-	Debug(args...)
-	Debugln(args...)
-	Debugf(format, args...)
+	Debug("Debug")
+	Debugln("Debugln")
+	Debugf("%s", "Debugf")
 
-	Info(args...)
-	Infoln(args...)
-	Infof(format, args...)
+	Info("Info")
+	Infoln("Infoln")
+	Infof("%s", "Infof")
 
-	Warn(args...)
-	Warnln(args...)
-	Warnf(format, args...)
+	Warn("Warn")
+	Warnln("Warnln")
+	Warnf("%s", "Warnf")
 
-	Warning(args...)
-	Warningln(args...)
-	Warningf(format, args...)
+	Warning("Warning")
+	Warningln("Warningln")
+	Warningf("%s", "Warningf")
 
-	Error(args...)
-	Errorln(args...)
-	Errorf(format, args...)
+	Error("Error")
+	Errorln("Errorln")
+	Errorf("%s", "Errorf")
 }

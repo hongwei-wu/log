@@ -1,42 +1,52 @@
 package log
 
-type DebugLogger interface {
-	Debug(args ...interface{})
-	Debugln(args ...interface{})
-	Debugf(format string, args ...interface{})
+import (
+	"github.com/hongwei-wu/log/appender"
+	"github.com/hongwei-wu/log/formatter"
+	"github.com/sirupsen/logrus"
+	"sync"
+)
+
+var (
+	once       sync.Once
+	rootLogger *LoggerImpl
+)
+
+func RootLogger() *LoggerImpl {
+	once.Do(func() {
+		rootLogger = NewLoggerImpl()
+		rootLogger.SetFormatter(formatter.NewRawFormatter())
+		rootLogger.AddAppender(appender.NewConsoleAppender())
+	})
+	return rootLogger
 }
 
-type InfoLogger interface {
-	Info(args ...interface{})
-	Infoln(args ...interface{})
-	Infof(format string, args ...interface{})
+type LoggerImpl struct {
+	*logrus.Logger
+	appenders map[string]appender.Appender
 }
 
-type WarnLogger interface {
-	Warn(args ...interface{})
-	Warnln(args ...interface{})
-	Warnf(format string, args ...interface{})
-	Warning(args ...interface{})
-	Warningln(args ...interface{})
-	Warningf(format string, args ...interface{})
+func NewLoggerImpl() *LoggerImpl {
+	l := &LoggerImpl{Logger: logrus.New(), appenders: make(map[string]appender.Appender)}
+	l.Logger.Out = l
+	return l
 }
 
-type ErrorLogger interface {
-	Error(args ...interface{})
-	Errorln(args ...interface{})
-	Errorf(format string, args ...interface{})
+func (l *LoggerImpl) Write(p []byte) (n int, err error) {
+	for _, a := range l.appenders {
+		a.Write(p)
+	}
+	return len(p), nil
 }
 
-type FatalLogger interface {
-	Fatal(args ...interface{})
-	Fatalln(args ...interface{})
-	Fatalf(format string, args ...interface{})
+func (l *LoggerImpl) SetLevel(level string) {
+	l.Logger.SetLevel(ParseLevel(level))
 }
 
-type Logger interface {
-	DebugLogger
-	InfoLogger
-	WarnLogger
-	ErrorLogger
-	FatalLogger
+func (l *LoggerImpl) SetFormatter(formatter formatter.Formatter) {
+	l.Logger.Formatter = formatter
+}
+
+func (l *LoggerImpl) AddAppender(appender appender.Appender) {
+	l.appenders[appender.Name()] = appender
 }

@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/hongwei-wu/log/internal/opts"
+	"github.com/hongwei-wu/log/field"
 	"github.com/sirupsen/logrus"
 	"sort"
+	"sync/atomic"
 )
 
 type RawFormatter struct {
+	maxFileWidth int32
 }
 
 func NewRawFormatter() *RawFormatter {
@@ -35,24 +37,18 @@ func (f *RawFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 	f.appendKeyValue(b, "level", fmt.Sprintf("%-5s", level))
 
-	/*
-		if _, ok := entry.Data[fieldFile]; ok {
-			f.appendKeyValue(b, fieldFile, entry.Data[fieldFile])
-		}
-
-		fields := make([]Field, 0, len(entry.Data))
-		for k, f := range entry.Data {
-			if k == fieldFile || k == FiledSkip {
-				continue
-			}
-			fields = append(fields, KeyField{key: k, field: f})
-		}
-	*/
+	if _, ok := entry.Data[field.File]; ok {
+		f.appendKeyValue(b, field.File, entry.Data[field.File])
+	}
 
 	fields := make([]Field, 0, len(entry.Data))
 	for k, f := range entry.Data {
+		if k == field.File || k == field.Skip {
+			continue
+		}
 		fields = append(fields, Field{key: k, field: f})
 	}
+
 	sort.Slice(fields, func(i, j int) bool {
 		return fields[i].key < fields[j].key
 	})
@@ -75,9 +71,10 @@ func (f *RawFormatter) appendKeyValue(b *bytes.Buffer, key string, value interfa
 	}
 	b.WriteString(key)
 	b.WriteByte('=')
-	if key == FieldFile {
+	if key == field.File {
 		file := fmt.Sprint(value)
-		f.appendValue(b, fmt.Sprintf("%-"+fmt.Sprintf("%d", 10)+"s", file))
+		width := f.updateMaxFileWidth(file)
+		f.appendValue(b, fmt.Sprintf("%-"+fmt.Sprintf("%d", width)+"s", file))
 	} else {
 		f.appendValue(b, value)
 	}
@@ -92,5 +89,13 @@ func (f *RawFormatter) appendValue(b *bytes.Buffer, value interface{}) {
 	b.WriteString(stringVal)
 }
 
-func (f *RawFormatter) GenPropOpt(prop string, value string) opts.Opt { return nil }
-func (f *RawFormatter) Apply(opts opts.Opts) error                    { return nil }
+func (f *RawFormatter) updateMaxFileWidth(file string) int32 {
+	width := int32(len(file))
+	max := atomic.LoadInt32(&f.maxFileWidth)
+	if width <= max {
+		width = max
+	} else {
+		atomic.StoreInt32(&f.maxFileWidth, width)
+	}
+	return width
+}

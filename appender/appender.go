@@ -1,30 +1,15 @@
 package appender
 
 import (
-	"github.com/hongwei-wu/log/internal/opts"
 	"io"
 	"sync/atomic"
 )
 
-const (
-	Console = "consoleAppender"
-)
-
 type Appender interface {
 	io.Writer
+	Name() string
 	SetLevel(level uint32)
 	GetLevel() uint32
-	GenPropOpt(prop string, value string) opts.Opt
-	Apply(opts opts.Opts) error
-}
-
-func CreateAppender(name string) Appender {
-	switch name {
-	case Console:
-		return NewConsoleAppender()
-	default:
-		return NewConsoleAppender()
-	}
 }
 
 type LevelKeeper struct {
