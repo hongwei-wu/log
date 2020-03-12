@@ -54,6 +54,10 @@ func (a *RollFileAppender) Write(p []byte) (int, error) {
 
 func (a *RollFileAppender) writeBuf(buff []byte) {
 	if !a.rollFile() {
+		if a.file != nil {
+			a.file.Close()
+		}
+		a.curSize = 0
 		return
 	}
 
