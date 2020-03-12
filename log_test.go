@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	testLogDir = "./tmp/log.dir"
+	testLogDir = "./tmp"
 )
 
 func TestLogger(t *testing.T) {

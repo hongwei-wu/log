@@ -46,10 +46,7 @@ func (f *RawFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		fields = append(fields, Field{key: k, field: f})
 	}
 
-	sort.Slice(fields, func(i, j int) bool {
-		return fields[i].key < fields[j].key
-	})
-
+	sort.Slice(fields, func(i, j int) bool { return fields[i].key < fields[j].key })
 	for i := range fields {
 		f.appendKeyValue(b, fields[i].key, fields[i].field)
 	}
